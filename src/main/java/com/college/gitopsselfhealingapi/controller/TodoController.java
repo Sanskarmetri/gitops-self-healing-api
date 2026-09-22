@@ -38,4 +38,9 @@ public class TodoController {
     public Map<String, String> health() {
         return Map.of("status", "UP");
     }
+
+    @GetMapping("/hello")
+    public Map<String, String> hello() {
+        return Map.of("message", "Hello from GitOps Self-Healing API");
+    }
 }
