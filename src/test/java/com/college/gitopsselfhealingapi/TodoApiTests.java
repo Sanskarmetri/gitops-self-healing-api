@@ -29,6 +29,13 @@ class TodoApiTests {
     }
 
     @Test
+    void helloEndpointReturnsMessage() throws Exception {
+        mockMvc.perform(get("/hello"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Hello from GitOps Self-Healing API"));
+    }
+
+    @Test
     void getTodosReturnsList() throws Exception {
         mockMvc.perform(get("/todos"))
                 .andExpect(status().isOk())
