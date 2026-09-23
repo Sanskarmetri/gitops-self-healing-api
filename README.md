@@ -262,3 +262,105 @@ To also delete the image:
 ```bash
 docker rmi gitops-target:latest
 ```
+
+## Kubernetes deployment (GitOps stage)
+
+The application is deployed to Kubernetes (Minikube) from the manifests in
+`k8s/`. There are two objects:
+
+- `k8s/deployment.yaml` — a `Deployment` running **3 replicas** of the
+  `gitops-self-healing-api:latest` image, with liveness and readiness probes
+  hitting `GET /health` on port 8080.
+- `k8s/service.yaml` — a `NodePort` `Service` that exposes the app on port 8080
+  and selects the same `app: gitops-api` pods.
+
+Prerequisites: `minikube`, `kubectl`, and the Docker image from the container
+stage (see the Docker section above).
+
+### 1. Load the image into Minikube
+
+Minikube does not see your Docker daemon, so load the image first:
+
+```bash
+mvn -q package -DskipTests                       # build the JAR
+docker build -t gitops-self-healing-api:latest . # build the image
+minikube image load gitops-self-healing-api:latest
+```
+
+Alternative (build directly inside Minikube):
+
+```bash
+minikube image build -t gitops-self-healing-api:latest .
+```
+
+### 2. Apply the Deployment and Service
+
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+### 3. Check pods
+
+```bash
+kubectl get pods
+```
+
+Expected: 3 pods, all `Running` with `1/1` READY:
+
+```text
+NAME                         READY   STATUS    RESTARTS   AGE
+gitops-api-<hash>-<pod>      1/1     Running   0          1m
+gitops-api-<hash>-<pod>      1/1     Running   0          1m
+gitops-api-<hash>-<pod>      1/1     Running   0          1m
+```
+
+### 4. Check the Deployment
+
+```bash
+kubectl get deployment gitops-api
+kubectl describe deployment gitops-api
+```
+
+`DESIRED`/`CURRENT`/`READY` should all show 3.
+
+### 5. Check the Service
+
+```bash
+kubectl get svc gitops-api
+```
+
+Note the `NodePort` (30000–32767) assigned by Minikube.
+
+### 6. Scale from 3 replicas to 5
+
+```bash
+kubectl scale deployment gitops-api --replicas=5
+```
+
+### 7. Verify the 5 replicas
+
+```bash
+kubectl get deployment gitops-api    # READY 5/5
+kubectl get pods                      # 5 pods Running
+```
+
+### 8. Access the application in Minikube
+
+```bash
+minikube service gitops-api           # opens the browser
+```
+
+or get the URL and check the health endpoint:
+
+```bash
+minikube service gitops-api --url     # e.g. http://192.168.49.2:3XXXX
+curl "$(minikube service gitops-api --url)/health"
+# => {"status":"UP"}
+```
+
+### Cleanup
+
+```bash
+kubectl delete -f k8s/deployment.yaml -f k8s/service.yaml
+```

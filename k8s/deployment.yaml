@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitops-api
+  labels:
+    app: gitops-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gitops-api
+  template:
+    metadata:
+      labels:
+        app: gitops-api
+    spec:
+      containers:
+        - name: gitops-api
+          image: gitops-self-healing-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
