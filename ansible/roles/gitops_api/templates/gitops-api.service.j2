@@ -1,0 +1,18 @@
+[Unit]
+Description=GitOps Self-Healing API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ app_user }}
+Group={{ app_group }}
+WorkingDirectory={{ app_dir }}
+ExecStart=/usr/bin/java -jar {{ app_dir }}/{{ app_jar_file }} --server.port={{ app_port }}
+Restart=always
+RestartSec=10
+SuccessExitStatus=143
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

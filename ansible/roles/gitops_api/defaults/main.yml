@@ -1,0 +1,22 @@
+---
+# Default variables for the gitops_api role.
+
+# Port the Spring Boot application listens on inside the target.
+app_port: 8080
+
+# Dedicated application user and group created on the target.
+app_user: gitops
+app_group: gitops
+
+# Directory on the target where the JAR is deployed.
+app_dir: /opt/gitops-api
+
+# Name of the packaged JAR produced by the Maven build.
+app_jar_file: gitops-self-healing-api-1.0.0.jar
+
+# Source JAR copied from the repository's Maven build output.
+# playbook_dir points to ansible/, so ../target is the project target/ directory.
+app_jar_src: "{{ playbook_dir }}/../target/gitops-self-healing-api-1.0.0.jar"
+
+# systemd unit name for the Spring Boot service.
+app_service_name: gitops-api

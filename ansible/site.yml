@@ -1,0 +1,7 @@
+---
+- name: Deploy gitops-self-healing-api
+  hosts: gitops_api
+  become: true
+
+  roles:
+    - gitops_api

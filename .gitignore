@@ -4,3 +4,7 @@ target/
 .classpath
 .project
 .settings/
+
+# Ansible: generated SSH keys and local target credentials
+ansible/.ansible/
+.ansible/
