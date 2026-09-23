@@ -74,6 +74,62 @@ curl -X POST http://localhost:8080/todos \
 curl http://localhost:8080/todos
 ```
 
+## Docker containerization (GitOps stage)
+
+The application is packaged as a container image built from the Maven-produced
+JAR (`target/gitops-self-healing-api-1.0.0.jar`). The image uses a lightweight
+Java 21 runtime (`eclipse-temurin:21-jre-alpine`) and runs the app as a
+non-root user.
+
+### Build the image
+
+```bash
+# JAR must exist first
+mvn -q package -DskipTests
+
+docker build -t gitops-self-healing-api .
+```
+
+`docker build` will print the image ID. The `.dockerignore` keeps the build
+context small (excludes `.git`, `ansible/`, generated Ansible SSH keys).
+
+### Run the container
+
+```bash
+docker run -d \
+  --name gitops-api \
+  -p 8080:8080 \
+  gitops-self-healing-api
+```
+
+The container listens on port **8080** (mapped to host port 8080).
+
+### Health-check the API
+
+```bash
+curl http://localhost:8080/health
+# => {"status":"UP"}
+```
+
+### View logs
+
+```bash
+docker logs gitops-api
+```
+
+### Stop and remove the container
+
+```bash
+docker stop gitops-api
+docker rm gitops-api
+```
+
+### Clean up the image
+
+```bash
+docker rmi gitops-self-healing-api:latest
+```
+
 ## Ansible deployment (GitOps stage)
 
 This stage deploys the built JAR to a Linux host using Ansible. The target is a

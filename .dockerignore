@@ -1,0 +1,13 @@
+# Keep the Docker build context small and keep secrets out of the
+# application image. NOTE: target/ is intentionally NOT ignored because
+# the Dockerfile COPYs the built JAR from target/.
+
+.git/
+.gitignore
+.idea/
+*.iml
+*.log
+
+# Generated Ansible SSH keys and Ansible stage (not needed by the app image).
+.ansible/
+ansible/
